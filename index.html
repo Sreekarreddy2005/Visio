@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Londrina+Sketch&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h1 class="title">Beyond Imagination</h1>
+    <h2 class="subtitle">Creating Visuals from Text with AI
+        <link href="https://fonts.googleapis.com/css2?family=Londrina+Sketch&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    </h2>
+    <h3 class="bio">With the Visio: A visual creation platform powered by AI, you can turn any prompt into a gorgeous poster in seconds. No design skills? No problem. Just tweak it as you wish, then share your poster.
+        <link href="https://fonts.googleapis.com/css2?family=Londrina+Sketch&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    </h3>
+    <p class="description">Create image from text
+        <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Londrina+Sketch&family=Oswald:wght@200..700&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    </p>
+    <form id="search-form">
+        <input type="text" id="description" name="description" placeholder="Describe about image " required>
+        <p class="choosing">Choose a style:
+            <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Londrina+Sketch&family=Oswald:wght@200..700&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        </p>
+        <div class="options">
+        <label>
+            <input type="radio" name="shape" value="square" checked>
+            <span class="pink-shape square"></span>
+            <br> 
+            <span class="shape-label">Square
+                <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+            </span>
+        </label>
+        <label>
+            <input type="radio" name="shape" value="rectangle">
+            <span class="pink-shape rectangle"></span> 
+            <br> <!-- Line break for positioning -->
+            <span class="shape-label">Rectangle
+                <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+            </span>
+        </label>
+    </div>
+        <button type="submit">Generate
+            <link href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&family=Londrina+Sketch&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+        </button>
+    </form>
+    <div id="image-results"></div>
+    <div class="designed-by">Designed by Sreekar Reddy
+        <link href="https://fonts.googleapis.com/css2?family=Mea+Culpa&display=swap" rel="stylesheet">
+    </div>
+</div>
+
+<script>
+    document.getElementById('search-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const description = document.getElementById('description').value;
+        const shape = document.querySelector('input[name="shape"]:checked').value;
+
+        const response = await fetch('/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ description, shape })
+        });
+        
+        const images = await response.json();
+        
+        const resultsDiv = document.getElementById('image-results');
+        resultsDiv.innerHTML = '';
+        
+        if (images.error) {
+            resultsDiv.innerHTML = `<p>Error: ${images.error}</p>`;
+            return;
+        }
+        
+        images.forEach(image => {
+            const imgElement = document.createElement('img');
+            imgElement.src = image;
+            imgElement.alt = "Generated Image";
+            imgElement.style.width = shape === 'square' ? '400px' : '600px';
+            resultsDiv.appendChild(imgElement);
+
+            // Add buttons below the generated image
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.onclick = () => window.open(`/download?url=${encodeURIComponent(image)}`, '_blank');
+
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy URL';
+            copyButton.onclick = () => copyImageUrl(image);
+
+            const whatsappButton = document.createElement('button');
+            whatsappButton.textContent = 'Share via WhatsApp';
+            whatsappButton.onclick = () => shareViaWhatsApp(image);
+
+            buttonContainer.appendChild(saveButton);
+            buttonContainer.appendChild(copyButton);
+            buttonContainer.appendChild(whatsappButton);
+            
+            resultsDiv.appendChild(buttonContainer);
+        });
+    });
+
+    function copyImageUrl(url) {
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Image URL copied to clipboard');
+        });
+    }
+
+    function shareViaWhatsApp(url) {
+        const whatsappUrl = `https://api.whatsapp.com/send?text=Check out this generated image: ${url}`;
+        window.open(whatsappUrl, '_blank');
+    }
+</script>
+</body>
+
+    </html>
